@@ -19,5 +19,6 @@ fun RecognitionNavHost() {
         composable("preview") {
             PreviewRoute()
         }
+
     }
 }
