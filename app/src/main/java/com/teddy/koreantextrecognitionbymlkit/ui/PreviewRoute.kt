@@ -3,8 +3,10 @@ package com.teddy.koreantextrecognitionbymlkit.ui
 import android.Manifest
 import androidx.activity.ComponentActivity
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCapture.CaptureMode
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import androidx.camera.mlkit.vision.MlKitAnalyzer
@@ -30,7 +32,9 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
+import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
 
 @Composable
@@ -55,22 +59,12 @@ fun PreviewScreen() {
 
         val previewView: PreviewView = remember { PreviewView(context) }
         val cameraController = remember { LifecycleCameraController(context) }
+        val recognizer =
+            TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
 
         LaunchedEffect(Unit) {
-            val recognizer =
-                TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
-            cameraController.setImageAnalysisAnalyzer(
-                ContextCompat.getMainExecutor(context),
-                MlKitAnalyzer(
-                    listOf(recognizer),
-                    CameraController.IMAGE_CAPTURE,
-                    ContextCompat.getMainExecutor(context)
-                ) { result ->
-                    println("111: ${result.getValue(recognizer)?.text}")
-                }
-            )
-
-            cameraController.imageAnalysisBackpressureStrategy = ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST
+            cameraController.imageAnalysisBackpressureStrategy =
+                ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST
             cameraController.bindToLifecycle(context as ComponentActivity)
             cameraController.cameraSelector =
                 CameraSelector.DEFAULT_BACK_CAMERA
@@ -88,8 +82,18 @@ fun PreviewScreen() {
                         cameraController.takePicture(
                             ContextCompat.getMainExecutor(context),
                             object : ImageCapture.OnImageCapturedCallback() {
-                                override fun onCaptureSuccess(image: ImageProxy) {
-                                    super.onCaptureSuccess(image)
+                                override fun onCaptureSuccess(imageProxy: ImageProxy) {
+                                    super.onCaptureSuccess(imageProxy)
+
+                                    val mediaImage = imageProxy.image
+                                    if (mediaImage != null) {
+                                        val image =
+                                            InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+
+                                        recognizer.process(image)
+                                            .addOnSuccessListener {  }
+                                            .addOnFailureListener {  }
+                                    }
                                 }
 
                                 override fun onError(exception: ImageCaptureException) {
@@ -120,5 +124,4 @@ fun PreviewScreen() {
             }
         }
     }
-
 }
