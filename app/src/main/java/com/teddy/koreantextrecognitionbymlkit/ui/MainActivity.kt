@@ -3,6 +3,7 @@ package com.teddy.koreantextrecognitionbymlkit.ui
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
@@ -37,6 +38,8 @@ import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
 import com.teddy.koreantextrecognitionbymlkit.ui.theme.KoreanTextRecognitionByMLKitTheme
 
 class MainActivity : ComponentActivity() {
+    private val viewModel: RecognitionViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -46,7 +49,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    RecognitionNavHost()
+                    RecognitionNavHost(viewModel)
                 }
             }
         }

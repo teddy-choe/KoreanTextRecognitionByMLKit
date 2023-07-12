@@ -1,16 +1,13 @@
-package com.teddy.koreantextrecognitionbymlkit.ui
+package com.teddy.koreantextrecognitionbymlkit.ui.preview
 
 import android.Manifest
+import android.graphics.Bitmap
 import androidx.activity.ComponentActivity
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCapture.CaptureMode
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
-import androidx.camera.mlkit.vision.MlKitAnalyzer
-import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Box
@@ -32,19 +29,27 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
-import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
-import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
+import com.teddy.koreantextrecognitionbymlkit.ui.RecognitionViewModel
 
 @Composable
-fun PreviewRoute() {
-    PreviewScreen()
+fun PreviewRoute(
+    viewModel: RecognitionViewModel,
+    navigateToResult: () -> Unit
+) {
+    PreviewScreen(
+        navigateToResult = navigateToResult,
+        saveImage = viewModel::setImage
+    )
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun PreviewScreen() {
+fun PreviewScreen(
+    navigateToResult: () -> Unit,
+    saveImage: (Bitmap) -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -59,8 +64,6 @@ fun PreviewScreen() {
 
         val previewView: PreviewView = remember { PreviewView(context) }
         val cameraController = remember { LifecycleCameraController(context) }
-        val recognizer =
-            TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
 
         LaunchedEffect(Unit) {
             cameraController.imageAnalysisBackpressureStrategy =
@@ -84,20 +87,13 @@ fun PreviewScreen() {
                             object : ImageCapture.OnImageCapturedCallback() {
                                 override fun onCaptureSuccess(imageProxy: ImageProxy) {
                                     super.onCaptureSuccess(imageProxy)
-
-                                    val mediaImage = imageProxy.image
-                                    if (mediaImage != null) {
-                                        val image =
-                                            InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-
-                                        recognizer.process(image)
-                                            .addOnSuccessListener {  }
-                                            .addOnFailureListener {  }
-                                    }
+                                    navigateToResult()
+                                    saveImage(imageProxy.toBitmap())
                                 }
 
                                 override fun onError(exception: ImageCaptureException) {
                                     super.onError(exception)
+                                    println("222")
                                 }
                             }
                         )
