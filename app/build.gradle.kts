@@ -69,6 +69,8 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
+    implementation("com.jakewharton.timber:timber:5.0.1")
+
     // Permission
     implementation("com.google.accompanist:accompanist-permissions:0.28.0")
 
@@ -82,5 +84,8 @@ dependencies {
     implementation("androidx.camera:camera-core:${camerax_version}")
     implementation("androidx.camera:camera-camera2:${camerax_version}")
     implementation("androidx.camera:camera-mlkit-vision:${camerax_version}")
+
+    // Coil
+    implementation("io.coil-kt:coil-compose:2.4.0")
 
 }

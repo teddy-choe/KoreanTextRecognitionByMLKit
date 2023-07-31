@@ -1,7 +1,11 @@
 package com.teddy.koreantextrecognitionbymlkit.ui.preview
 
 import android.Manifest
+import android.content.ContentValues
+import android.content.Context
 import android.graphics.Bitmap
+import android.os.Build
+import android.provider.MediaStore
 import androidx.activity.ComponentActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -29,9 +33,8 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
-import com.google.mlkit.vision.text.TextRecognition
-import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
 import com.teddy.koreantextrecognitionbymlkit.ui.RecognitionViewModel
+import java.io.File
 
 @Composable
 fun PreviewRoute(
@@ -40,7 +43,6 @@ fun PreviewRoute(
 ) {
     PreviewScreen(
         navigateToResult = navigateToResult,
-        saveImage = viewModel::setImage
     )
 }
 
@@ -48,7 +50,6 @@ fun PreviewRoute(
 @Composable
 fun PreviewScreen(
     navigateToResult: () -> Unit,
-    saveImage: (Bitmap) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -83,18 +84,30 @@ fun PreviewScreen(
                 Button(
                     onClick = {
                         cameraController.takePicture(
+                            ImageCapture.OutputFileOptions.Builder(
+                                context.contentResolver,
+                                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                                ContentValues().apply {
+                                    this.put(MediaStore.Images.Media.DISPLAY_NAME, "123")
+                                    this.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                                    this.put(
+                                        MediaStore.Images.Media.DATE_TAKEN,
+                                        ""
+                                    )
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                        this.put(MediaStore.Images.Media.IS_PENDING, 1)
+                                    }
+                                }).build(),
                             ContextCompat.getMainExecutor(context),
-                            object : ImageCapture.OnImageCapturedCallback() {
-                                override fun onCaptureSuccess(imageProxy: ImageProxy) {
-                                    super.onCaptureSuccess(imageProxy)
+                            object : ImageCapture.OnImageSavedCallback {
+                                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
                                     navigateToResult()
-                                    saveImage(imageProxy.toBitmap())
                                 }
 
                                 override fun onError(exception: ImageCaptureException) {
-                                    super.onError(exception)
-                                    println("222")
+                                    TODO("Not yet implemented")
                                 }
+
                             }
                         )
                     },
