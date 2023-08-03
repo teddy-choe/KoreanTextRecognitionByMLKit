@@ -25,7 +25,6 @@ fun RecognitionNavHost(
 
         composable("preview") {
             PreviewRoute(
-                viewModel = viewModel,
                 navigateToResult = { navController.navigate("result") }
             )
         }

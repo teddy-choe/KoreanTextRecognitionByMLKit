@@ -2,8 +2,6 @@ package com.teddy.koreantextrecognitionbymlkit.ui.preview
 
 import android.Manifest
 import android.content.ContentValues
-import android.content.Context
-import android.graphics.Bitmap
 import android.os.Build
 import android.provider.MediaStore
 import androidx.activity.ComponentActivity
@@ -11,7 +9,6 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.ImageProxy
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Box
@@ -34,11 +31,10 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import com.teddy.koreantextrecognitionbymlkit.ui.RecognitionViewModel
-import java.io.File
+import java.util.Calendar
 
 @Composable
 fun PreviewRoute(
-    viewModel: RecognitionViewModel,
     navigateToResult: () -> Unit
 ) {
     PreviewScreen(
@@ -88,7 +84,7 @@ fun PreviewScreen(
                                 context.contentResolver,
                                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                                 ContentValues().apply {
-                                    this.put(MediaStore.Images.Media.DISPLAY_NAME, "123")
+                                    this.put(MediaStore.Images.Media.DISPLAY_NAME, Calendar.getInstance().time.toString())
                                     this.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
                                     this.put(
                                         MediaStore.Images.Media.DATE_TAKEN,

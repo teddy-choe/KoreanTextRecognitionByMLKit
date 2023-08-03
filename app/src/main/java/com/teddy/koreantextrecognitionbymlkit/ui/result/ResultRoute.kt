@@ -12,13 +12,16 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import coil.compose.AsyncImage
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
+import com.teddy.koreantextrecognitionbymlkit.R
 import com.teddy.koreantextrecognitionbymlkit.ui.RecognitionViewModel
 
 @Composable
@@ -44,22 +47,21 @@ fun ResultScreen(
     }
 
     Column {
-        if (bitmap == null) {
+        var text by rememberSaveable {
+            mutableStateOf("")
+        }
 
-        } else {
-            var text by remember {
-                mutableStateOf("")
-            }
-            LaunchedEffect(Unit) {
+        LaunchedEffect(Unit) {
+            if (bitmap != null) {
                 recognizer.process(
                     InputImage.fromBitmap(bitmap!!, 0)
                 )
                     .addOnSuccessListener { text = it.text }
-                    .addOnFailureListener { }
+                    .addOnFailureListener {  }
             }
-
-            AsyncImage(model = bitmap, contentDescription = "")
-            Text(text = text)
         }
+
+        AsyncImage(model = bitmap, contentDescription = "", placeholder = painterResource(id = R.drawable.placeholder))
+        Text(text = text)
     }
 }
