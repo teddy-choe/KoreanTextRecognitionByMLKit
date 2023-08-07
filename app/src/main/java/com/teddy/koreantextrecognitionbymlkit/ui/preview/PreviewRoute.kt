@@ -1,16 +1,7 @@
 package com.teddy.koreantextrecognitionbymlkit.ui.preview
 
 import android.Manifest
-import android.content.ContentValues
-import android.os.Build
-import android.provider.MediaStore
-import androidx.activity.ComponentActivity
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
-import androidx.camera.view.LifecycleCameraController
-import androidx.camera.view.PreviewView
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,20 +9,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
-import com.teddy.koreantextrecognitionbymlkit.ui.RecognitionViewModel
-import java.util.Calendar
+import com.teddy.koreantextrecognitionbymlkit.ui.rememberCameraState
 
 @Composable
 fun PreviewRoute(
@@ -50,7 +37,7 @@ fun PreviewScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(30.dp),
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         val context = LocalContext.current
@@ -59,60 +46,31 @@ fun PreviewScreen(
             Manifest.permission.CAMERA
         )
 
-        val previewView: PreviewView = remember { PreviewView(context) }
-        val cameraController = remember { LifecycleCameraController(context) }
-
-        LaunchedEffect(Unit) {
-            cameraController.imageAnalysisBackpressureStrategy =
-                ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST
-            cameraController.bindToLifecycle(context as ComponentActivity)
-            cameraController.cameraSelector =
-                CameraSelector.DEFAULT_BACK_CAMERA
-            previewView.controller = cameraController
-        }
-
         if (cameraPermissionState.status.isGranted) {
+            val cameraState = rememberCameraState(
+                context = context,
+                onSuccess = { navigateToResult() },
+                onFailure = {
+                    Toast.makeText(
+                        context,
+                        "an error happens while saving the image.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            )
+
             Box {
                 AndroidView(factory = { ctx ->
-                    previewView
+                    cameraState.previewView
                 }, modifier = Modifier.fillMaxSize())
 
                 Button(
-                    onClick = {
-                        cameraController.takePicture(
-                            ImageCapture.OutputFileOptions.Builder(
-                                context.contentResolver,
-                                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                                ContentValues().apply {
-                                    this.put(MediaStore.Images.Media.DISPLAY_NAME, Calendar.getInstance().time.toString())
-                                    this.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-                                    this.put(
-                                        MediaStore.Images.Media.DATE_TAKEN,
-                                        ""
-                                    )
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                        this.put(MediaStore.Images.Media.IS_PENDING, 1)
-                                    }
-                                }).build(),
-                            ContextCompat.getMainExecutor(context),
-                            object : ImageCapture.OnImageSavedCallback {
-                                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                                    navigateToResult()
-                                }
-
-                                override fun onError(exception: ImageCaptureException) {
-                                    TODO("Not yet implemented")
-                                }
-
-                            }
-                        )
-                    },
+                    onClick = { cameraState.captureImage(isSave = true) },
                     modifier = Modifier.align(Alignment.BottomCenter)
                 ) {
-                    Text(text = "Click!")
+                    Text(text = "Capture")
                 }
             }
-
         } else {
             Column {
                 val textToShow =
