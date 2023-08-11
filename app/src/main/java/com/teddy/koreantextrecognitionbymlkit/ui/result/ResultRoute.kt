@@ -25,13 +25,20 @@ import com.teddy.koreantextrecognitionbymlkit.R
 import com.teddy.koreantextrecognitionbymlkit.ui.RecognitionViewModel
 
 @Composable
-fun ResultRoute(viewModel: RecognitionViewModel) {
-    ResultScreen(viewModel::getImage)
+fun ResultRoute(
+    viewModel: RecognitionViewModel,
+    uri: String,
+) {
+    ResultScreen(
+        uri = uri,
+        getBitmap = viewModel::getImage
+    )
 }
 
 @Composable
 fun ResultScreen(
-    getBitmap: (context: Context) -> Bitmap?
+    uri: String,
+    getBitmap: (context: Context, uri: String) -> Bitmap?
 ) {
     val recognizer = remember {
         TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
@@ -43,7 +50,7 @@ fun ResultScreen(
     }
 
     LaunchedEffect(Unit) {
-        bitmap = getBitmap(context)
+        bitmap = getBitmap(context, uri)
     }
 
     Column {
@@ -51,17 +58,22 @@ fun ResultScreen(
             mutableStateOf("")
         }
 
-        LaunchedEffect(Unit) {
+        LaunchedEffect(bitmap) {
             if (bitmap != null) {
                 recognizer.process(
                     InputImage.fromBitmap(bitmap!!, 0)
                 )
                     .addOnSuccessListener { text = it.text }
-                    .addOnFailureListener {  }
+                    .addOnFailureListener { }
             }
         }
 
-        AsyncImage(model = bitmap, contentDescription = "", placeholder = painterResource(id = R.drawable.placeholder))
+        AsyncImage(
+            model = bitmap,
+            contentDescription = "",
+            placeholder = painterResource(id = R.drawable.placeholder)
+        )
+
         Text(text = text)
     }
 }

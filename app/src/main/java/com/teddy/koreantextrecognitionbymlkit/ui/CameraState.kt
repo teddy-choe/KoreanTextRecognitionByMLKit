@@ -12,6 +12,8 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.core.content.ContextCompat
 import timber.log.Timber
@@ -33,8 +35,8 @@ class CameraState(
     val onSuccess: () -> Unit,
     val onFailure: () -> Unit
 ) {
-    val previewView: PreviewView = PreviewView(context)
-    val cameraController = LifecycleCameraController(context)
+    val previewView: PreviewView by mutableStateOf(PreviewView(context))
+    val cameraController by mutableStateOf(LifecycleCameraController(context))
 
     init {
         cameraController.imageAnalysisBackpressureStrategy = ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST

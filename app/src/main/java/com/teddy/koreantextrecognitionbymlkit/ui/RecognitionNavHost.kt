@@ -18,9 +18,14 @@ fun RecognitionNavHost(
         startDestination = "home"
     ) {
         composable("home") {
-            HomeRoute(navigatePreview = {
-                navController.navigate("preview")
-            })
+            HomeRoute(
+                navigateToPreview = {
+                    navController.navigate("preview")
+                },
+                navigateToResult = { uri ->
+                    navController.navigate("result/$uri")
+                }
+            )
         }
 
         composable("preview") {
@@ -29,9 +34,11 @@ fun RecognitionNavHost(
             )
         }
 
-        composable("result") {
-            ResultRoute(viewModel = viewModel)
+        composable("result/{uri}") { backStackEntry ->
+            ResultRoute(
+                viewModel = viewModel,
+                uri = backStackEntry.arguments?.getString("uri") ?: ""
+            )
         }
-
     }
 }
