@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -41,6 +42,7 @@ fun PreviewScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         val context = LocalContext.current
+        val lifecycleOwner = LocalLifecycleOwner.current
 
         val cameraPermissionState = rememberPermissionState(
             Manifest.permission.CAMERA
@@ -49,6 +51,7 @@ fun PreviewScreen(
         if (cameraPermissionState.status.isGranted) {
             val cameraState = rememberCameraState(
                 context = context,
+                lifecycleOwner = lifecycleOwner,
                 onSuccess = { navigateToResult() },
                 onFailure = {
                     Toast.makeText(
@@ -58,19 +61,16 @@ fun PreviewScreen(
                     ).show()
                 }
             )
-
+            
             Box {
                 AndroidView(factory = { ctx ->
-                    cameraState.previewView
+                    cameraState.previewView.also {
+                        cameraState.initializeCameraController()
+                    }
                 }, modifier = Modifier.fillMaxSize())
-
-                Button(
-                    onClick = { cameraState.captureImage(isSave = true) },
-                    modifier = Modifier.align(Alignment.BottomCenter)
-                ) {
-                    Text(text = "Capture")
-                }
+                
             }
+            
         } else {
             Column {
                 val textToShow =
