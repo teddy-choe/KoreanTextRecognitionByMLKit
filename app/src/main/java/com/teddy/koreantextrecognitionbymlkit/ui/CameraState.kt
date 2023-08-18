@@ -19,7 +19,7 @@ import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
 fun rememberCameraState(
     context: Context,
     lifecycleOwner: LifecycleOwner,
-    onSuccess: () -> Unit,
+    onSuccess: (text: String) -> Unit,
     onFailure: () -> Unit
 ): CameraState {
     return remember(context, onSuccess, onFailure) {
@@ -31,7 +31,7 @@ fun rememberCameraState(
 class CameraState(
     val context: Context,
     val lifecycleOwner: LifecycleOwner,
-    val onSuccess: () -> Unit,
+    val onSuccess: (text: String) -> Unit,
     val onFailure: () -> Unit
 ) {
     val previewView: PreviewView = PreviewView(context)
@@ -53,7 +53,7 @@ class CameraState(
                 CameraController.IMAGE_CAPTURE,
                 ContextCompat.getMainExecutor(context)
             ) { result ->
-                println("111: ${result.getValue(recognizer)?.text}")
+                onSuccess(result.getValue(recognizer)?.text ?: "")
             }
         )
     }

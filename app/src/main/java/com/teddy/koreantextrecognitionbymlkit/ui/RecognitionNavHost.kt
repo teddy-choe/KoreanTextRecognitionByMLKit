@@ -5,7 +5,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.teddy.koreantextrecognitionbymlkit.ui.home.HomeRoute
-import com.teddy.koreantextrecognitionbymlkit.ui.preview.PreviewRoute
+import com.teddy.koreantextrecognitionbymlkit.ui.preview.LiveRecognitionRoute
 import com.teddy.koreantextrecognitionbymlkit.ui.result.ResultRoute
 
 @Composable
@@ -29,9 +29,7 @@ fun RecognitionNavHost(
         }
 
         composable("preview") {
-            PreviewRoute(
-                navigateToResult = { navController.navigate("result") }
-            )
+            LiveRecognitionRoute()
         }
 
         composable("result/{uri}") { backStackEntry ->
